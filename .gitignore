@@ -7,3 +7,4 @@
 *.tfplan.*
 .terraformrc
 terraform.rc
+.env
