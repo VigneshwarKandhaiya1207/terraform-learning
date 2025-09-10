@@ -1,7 +1,9 @@
-cidr_block = "10.0.0.0/16"
-
-
-subnet_config = {
+vpc_configs= {
+  prod={
+  vpc_config= {
+    cidr_block = "10.0.0.0/16"
+  }
+  subnet_config = {
   "private_1" = {
     cidr_block = "10.0.0.0/24"
     az         = "us-east-1a"
@@ -26,4 +28,6 @@ subnet_config = {
     az         = "us-east-1b"
     public     = true
   }
+}
+}
 }
