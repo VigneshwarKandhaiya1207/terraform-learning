@@ -1,0 +1,43 @@
+Infra Summary Report
+====================
+
+%{ for vpc_key, v in vpcs ~}
+VPC ${vpc_key}:
+  - VPC ID        : ${v.vpc_id}
+  - CIDR Block    : ${v.cidr_block}
+
+  Public Subnets:
+%{ if length(keys(v.public_subnets)) == 0 }
+    (none)
+%{ else }
+%{ for sk, s in v.public_subnets ~}
+    * ${sk} :
+        ID   = ${s.id}
+        CIDR = ${s.cidr_block}
+        AZ   = ${s.az}
+%{ endfor }
+%{ endif }
+
+  Private Subnets:
+%{ if length(keys(v.private_subnets)) == 0 }
+    (none)
+%{ else }
+%{ for sk, s in v.private_subnets ~}
+    * ${sk} :
+        ID   = ${s.id}
+        CIDR = ${s.cidr_block}
+        AZ   = ${s.az}
+%{ endfor }
+%{ endif }
+
+  Internet Gateway : ${v.internet_gateway_id != "" ? v.internet_gateway_id : "N/A"}
+  NAT Gateway      : ${v.nat_gateway_id != "" ? v.nat_gateway_id : "N/A"}
+
+  Route Tables:
+    Public : ${v.public_rt_id != "" ? v.public_rt_id : "N/A"}
+    Private: %{ if length(keys(v.private_rt_ids)) == 0 }N/A%{ else }%{ for k, id in v.private_rt_ids }${k} -> ${id} %{ endfor }%{ endif }
+
+  S3 Gateway Endpoint : ${v.s3_endpoint_id != "" ? v.s3_endpoint_id : "N/A"}
+--------------------------------------------------------
+
+%{ endfor ~}

@@ -1,0 +1,26 @@
+%{ for vpc_name, vpc in vpcs ~}
+VPC: ${vpc_name} (${vpc.cidr_block})
+
+Public Subnets:
+%{ for name, id in vpc.public_subnets ~}
+ - ${name}: ${id}
+%{ endfor ~}
+
+Private Subnets:
+%{ for name, id in vpc.private_subnets ~}
+ - ${name}: ${id}
+%{ endfor ~}
+
+Internet Gateway: ${vpc.internet_gateway_id}
+NAT Gateway: ${vpc.nat_gateway_id}
+
+Public Route Table: ${vpc.public_rt_id}
+Private Route Tables:
+%{ for name, id in vpc.private_rt_ids ~}
+ - ${name}: ${id}
+%{ endfor ~}
+
+S3 Endpoint: ${vpc.s3_endpoint_id}
+
+---------------------------------------
+%{ endfor ~}

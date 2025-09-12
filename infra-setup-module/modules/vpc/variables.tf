@@ -1,6 +1,16 @@
-variable "name" {
+variable "client_name" {
   description = "Name prefix for VPC resources (unique per VPC)"
   type        = string
+}
+
+variable "Env" {
+  description = "Name of the Environment"
+  type = string
+}
+
+variable "application" {
+  description = "Name of the application"
+  type = string
 }
 
 variable "cidr_block" {

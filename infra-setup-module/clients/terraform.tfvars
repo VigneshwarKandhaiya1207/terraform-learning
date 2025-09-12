@@ -1,6 +1,8 @@
-name       = "terraform-testing"
+client_name       = "terraform-testing"
+Env = "Dev"
 cidr_block = "10.0.0.0/16"
 region = "us-east-1"
+application = "APP"
 
 subnets = {
   "private_1" = {
