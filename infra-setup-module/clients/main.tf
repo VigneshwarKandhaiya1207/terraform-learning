@@ -40,5 +40,6 @@ output "infra_summary_text" {
 # Optional: write to a file
 resource "local_file" "infra_summary_file" {
   content  = templatefile("${path.module}/templates/infra-summary.tmpl", { vpcs = local.all_vpcs })
-  filename = "${path.module}/infra-summary.txt"
+  filename = "${path.module}/${var.client_name}-${local.common_tags.Env}-${var.application}-infra-summary.txt"
+
 }
