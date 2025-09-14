@@ -1,3 +1,4 @@
+
 variable "region" {
   type = string
 }
@@ -9,12 +10,12 @@ variable "client_name" {
 
 variable "Env" {
   description = "Name of the environment"
-  type = string
+  type        = string
 }
 
 variable "application" {
   description = "Name of the application"
-  type = string
+  type        = string
 }
 
 variable "cidr_block" {
@@ -29,4 +30,42 @@ variable "subnets" {
     az         = string
     public     = optional(bool, false)
   }))
+}
+
+
+# ---------------------------
+# Application Toggles
+# ---------------------------
+variable "enable_map" {
+  description = "Enable map application components"
+  type        = bool
+  default     = false
+}
+
+variable "enable_cwb" {
+  description = "Enable cwb application components"
+  type        = bool
+  default     = false
+}
+
+
+variable "ssh_key_name" {
+  description = "SSH key name (created via deploy.sh)"
+  type        = string
+}
+
+# variable "map_ami" {
+#   description = "AMI ID for map EC2s"
+#   type        = string
+# }
+
+# variable "cwb_ami" {
+#   description = "AMI ID for cwb EC2s"
+#   type        = string
+# }
+
+variable "module_application" {
+  description = "Application Module"
+  type        = string
+  default = "map"
 }

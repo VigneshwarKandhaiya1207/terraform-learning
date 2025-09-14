@@ -43,7 +43,7 @@ resource "aws_vpc" "this" {
   enable_dns_hostnames = true
 
   tags = merge(local.common_tags,
-    { Name = "${var.client_name}-${local.common_tags.Env}-${var.application}-vpc" })
+  { Name = "${var.client_name}-${local.common_tags.Env}-${var.application}-vpc" })
 }
 
 # Internet Gateway (only if public subnets exist)
@@ -52,7 +52,7 @@ resource "aws_internet_gateway" "this" {
   vpc_id = aws_vpc.this.id
 
   tags = merge(local.common_tags,
-    { Name = "${var.client_name}-${local.common_tags.Env}-${var.application}-igw" })
+  { Name = "${var.client_name}-${local.common_tags.Env}-${var.application}-igw" })
 }
 
 # Subnets
@@ -64,7 +64,7 @@ resource "aws_subnet" "this" {
   availability_zone = each.value.az
 
   tags = merge(local.common_tags,
-    { Name = "${each.key}-${var.client_name}-${local.common_tags.Env}-${var.application}-subnet" })
+  { Name = "${each.key}-${var.client_name}-${local.common_tags.Env}-${var.application}-subnet" })
 }
 
 # Public Route Table
@@ -73,7 +73,7 @@ resource "aws_route_table" "public" {
   vpc_id = aws_vpc.this.id
 
   tags = merge(local.common_tags,
-    { Name = "${var.client_name}-${local.common_tags.Env}-${var.application}-public-rt" })
+  { Name = "${var.client_name}-${local.common_tags.Env}-${var.application}-public-rt" })
 }
 
 # Default route to IGW
@@ -101,7 +101,7 @@ resource "aws_eip" "nat_eip" {
   domain = "vpc"
 
   tags = merge(local.common_tags,
-    { Name = "${var.client_name}-${local.common_tags.Env}-${var.application}-nat-eip" })
+  { Name = "${var.client_name}-${local.common_tags.Env}-${var.application}-nat-eip" })
 }
 
 # NAT Gateway
@@ -116,7 +116,7 @@ resource "aws_nat_gateway" "nat" {
   subnet_id     = length(local.public_subnet_ids) > 0 ? local.public_subnet_ids[0] : null
 
   tags = merge(local.common_tags,
-    { Name = "${var.client_name}-${local.common_tags.Env}-${var.application}-nat-gw" })
+  { Name = "${var.client_name}-${local.common_tags.Env}-${var.application}-nat-gw" })
 
   depends_on = [aws_internet_gateway.this]
 }
@@ -127,7 +127,7 @@ resource "aws_route_table" "private" {
   vpc_id = aws_vpc.this.id
 
   tags = merge(local.common_tags,
-    { Name = "${var.client_name}-${local.common_tags.Env}-${var.application}-private-rt" })
+  { Name = "${var.client_name}-${local.common_tags.Env}-${var.application}-private-rt" })
 }
 
 # Private default route to NAT
@@ -158,5 +158,5 @@ resource "aws_vpc_endpoint" "s3" {
   route_table_ids   = [aws_route_table.private[0].id]
 
   tags = merge(local.common_tags,
-    { Name = "${var.client_name}-${local.common_tags.Env}-${var.application}-s3-endpoint" })
+  { Name = "${var.client_name}-${local.common_tags.Env}-${var.application}-s3-endpoint" })
 }

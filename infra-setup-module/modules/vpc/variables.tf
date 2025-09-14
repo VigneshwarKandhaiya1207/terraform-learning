@@ -5,12 +5,12 @@ variable "client_name" {
 
 variable "Env" {
   description = "Name of the Environment"
-  type = string
+  type        = string
 }
 
 variable "application" {
   description = "Name of the application"
-  type = string
+  type        = string
 }
 
 variable "cidr_block" {

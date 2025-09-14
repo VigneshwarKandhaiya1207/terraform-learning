@@ -60,14 +60,14 @@ output "s3_endpoint_id" {
 output "vpc_info" {
   description = "All important details about this VPC"
   value = {
-    vpc_id               = aws_vpc.this.id
-    cidr_block           = aws_vpc.this.cidr_block
-    public_subnets       = { for k, s in aws_subnet.this : k => s.id if lookup(var.subnets[k], "public", false) }
-    private_subnets      = { for k, s in aws_subnet.this : k => s.id if !lookup(var.subnets[k], "public", false) }
-    internet_gateway_id  = try(aws_internet_gateway.this[0].id, "")
-    nat_gateway_id       = try(aws_nat_gateway.nat[0].id, "")
-    public_rt_id         = try(aws_route_table.public[0].id, "")
-    private_rt_ids       = { for rt in aws_route_table.private : rt.tags.Name => rt.id }
-    s3_endpoint_id       = try(aws_vpc_endpoint.s3[0].id, "")
+    vpc_id              = aws_vpc.this.id
+    cidr_block          = aws_vpc.this.cidr_block
+    public_subnets      = { for k, s in aws_subnet.this : k => s.id if lookup(var.subnets[k], "public", false) }
+    private_subnets     = { for k, s in aws_subnet.this : k => s.id if !lookup(var.subnets[k], "public", false) }
+    internet_gateway_id = try(aws_internet_gateway.this[0].id, "")
+    nat_gateway_id      = try(aws_nat_gateway.nat[0].id, "")
+    public_rt_id        = try(aws_route_table.public[0].id, "")
+    private_rt_ids      = { for rt in aws_route_table.private : rt.tags.Name => rt.id }
+    s3_endpoint_id      = try(aws_vpc_endpoint.s3[0].id, "")
   }
 }

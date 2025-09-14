@@ -1,8 +1,12 @@
-client_name       = "terraform-testing"
-Env = "dev"
-cidr_block = "10.0.0.0/16"
-region = "us-east-1"
+client_name = "testing"
+Env         = "dev"
+cidr_block  = "10.0.0.0/16"
+region      = "us-east-1"
 application = "APP"
+enable_map  = true
+enable_cwb  = false
+ssh_key_name = "cwb.pem"
+
 
 subnets = {
   "private_1" = {
