@@ -10,10 +10,10 @@ locals {
 # Security Group for ALB
 # ---------------------------
 resource "aws_security_group" "alb_sg" {
-  count       = var.create ? 1 : 0
+  for_each    = var.create ? { "alb" = var.vpc_id } : {}
   name        = "${var.name_prefix}-alb-sg"
   description = "Security group for ${var.name_prefix} ALB"
-  vpc_id      = var.vpc_id
+  vpc_id      = each.value
 
   ingress {
     description = "Allow HTTP"
@@ -23,14 +23,13 @@ resource "aws_security_group" "alb_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  # HTTPS will be added later once ACM is ready
-  # ingress {
-  #   description = "Allow HTTPS"
-  #   from_port   = 443
-  #   to_port     = 443
-  #   protocol    = "tcp"
-  #   cidr_blocks = ["0.0.0.0/0"]
-  # }
+  ingress {
+    description = "Allow HTTPS"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 
   egress {
     from_port   = 0
@@ -38,35 +37,29 @@ resource "aws_security_group" "alb_sg" {
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
-
-  tags = merge(local.common_tags,
-  { Name = "${var.name_prefix}-sg" })
 }
 
 # ---------------------------
 # Load Balancer
 # ---------------------------
 resource "aws_lb" "this" {
-  count              = var.create ? 1 : 0
+  for_each           = var.create ? { "alb" = var.vpc_id } : {}
   name               = replace(var.name_prefix, "/", "-")
   internal           = false
   load_balancer_type = "application"
   subnets            = var.public_subnet_ids
-  security_groups    = [aws_security_group.alb_sg[0].id]
-
-  tags = merge(local.common_tags,
-  { Name = "${var.name_prefix}-alb" })
+  security_groups    = [aws_security_group.alb_sg["alb"].id]
 }
 
 # ---------------------------
 # Target Group
 # ---------------------------
 resource "aws_lb_target_group" "this" {
-  count    = var.create ? 1 : 0
+  for_each = var.create ? { "tg" = var.vpc_id } : {}
   name     = "${var.name_prefix}-tg"
   port     = var.port
   protocol = "HTTP"
-  vpc_id   = var.vpc_id
+  vpc_id   = each.value
 
   health_check {
     path                = var.health_check_path
@@ -76,24 +69,37 @@ resource "aws_lb_target_group" "this" {
     unhealthy_threshold = 2
     matcher             = "200-399"
   }
-
-  tags = merge(local.common_tags,
-  { Name = "${var.name_prefix}-tg" })
 }
 
-# ---------------------------
-# HTTP Listener (forward to TG)
-# ---------------------------
-resource "aws_lb_listener" "http_forward" {
-  count             = var.create ? 1 : 0
-  load_balancer_arn = aws_lb.this[0].arn
+# HTTP Listener → redirect to HTTPS
+resource "aws_lb_listener" "http_redirect" {
+  for_each          = var.create ? { "http" = true } : {}
+  load_balancer_arn = aws_lb.this["alb"].arn
   port              = 80
   protocol          = "HTTP"
 
   default_action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.this[0].arn
+    type = "redirect"
+    redirect {
+      port        = "443"
+      protocol    = "HTTPS"
+      status_code = "HTTP_301"
+    }
   }
 }
 
+# HTTPS Listener → forward to TG
+resource "aws_lb_listener" "https_forward" {
+  for_each = var.create ? { "https" = true } : {}
 
+  load_balancer_arn = aws_lb.this["alb"].arn
+  port              = 443
+  protocol          = "HTTPS"
+  ssl_policy        = "ELBSecurityPolicy-2016-08"
+  certificate_arn   = var.acm_certificate_arn
+
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.this["tg"].arn
+  }
+}

@@ -22,26 +22,18 @@ variable "name_prefix" {
   type = string
 }
 
-variable "vpc_id" {
-  type = string
-}
-
-variable "public_subnet_ids" {
-  type = list(string)
-}
-
-variable "port" {
-  type    = number
-  default = 80
-}
-
-variable "health_check_path" {
-  type    = string
-  default = "/"
+variable "s3_bucket_name" {
+  description = "S3 bucket for static content"
+  type        = string
 }
 
 variable "acm_certificate_arn" {
-  description = "ARN of ACM certificate for HTTPS listener"
+  description = "ARN of ACM certificate"
   type        = string
-  default     = ""
+}
+
+variable "aliases" {
+  description = "Custom domain aliases for CloudFront"
+  type        = list(string)
+  default     = []
 }

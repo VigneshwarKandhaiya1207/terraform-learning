@@ -67,5 +67,21 @@ variable "ssh_key_name" {
 variable "module_application" {
   description = "Application Module"
   type        = string
-  default = "map"
+  default     = "map"
+}
+
+variable "domain_name" {
+  description = "Root domain (e.g. ihapps.ai)"
+  type        = string
+}
+
+variable "subject_alternative_names" {
+  description = "SANs for ACM cert"
+  type        = list(string)
+  default     = []
+}
+
+variable "s3_bucket_name" {
+  description = "Name of the Static website bucket name"
+  type        = string
 }

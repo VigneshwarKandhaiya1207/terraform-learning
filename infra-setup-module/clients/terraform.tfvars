@@ -1,11 +1,17 @@
-client_name = "testing"
-Env         = "dev"
-cidr_block  = "10.0.0.0/16"
-region      = "us-east-1"
-application = "APP"
-enable_map  = true
-enable_cwb  = false
-ssh_key_name = "cwb.pem"
+client_name    = "testing"
+Env            = "dev"
+cidr_block     = "10.0.0.0/16"
+region         = "us-east-1"
+application    = "APP"
+enable_map     = true
+enable_cwb     = true
+ssh_key_name   = "cwb.pem"
+s3_bucket_name = "www.testing.ihapps.ai"
+domain_name    = "testing.ihapps.ai"
+subject_alternative_names = [
+  "testing.ihapps.ai",
+  "uat.testing.ihapps.ai"
+]
 
 
 subnets = {

@@ -30,42 +30,58 @@ data "aws_ami" "ubuntu" {
 
 
 module "app_vpc" {
+  source      = "../modules/vpc"
   client_name = var.client_name
   Env         = var.Env
   application = var.application
-  source      = "../modules/vpc"
+  cidr_block  = var.cidr_block
+  subnets     = var.subnets
+}
 
-  cidr_block = var.cidr_block
-  subnets    = var.subnets
+module "acm" {
+  source                    = "../modules/acm"
+  client_name               = var.client_name
+  Env                       = var.Env
+  application               = var.application
+  create                    = true
+  domain_name               = var.domain_name
+  subject_alternative_names = var.subject_alternative_names
 }
 
 
-
+# ---------------------------
+# MAP ALB (Admin + MySQL)
+# ---------------------------
 module "map_alb" {
   source            = "../modules/alb"
   client_name       = var.client_name
   Env               = var.Env
   application       = var.application
   create            = var.enable_map
-  name_prefix       = "${var.client_name}-${local.common_tags.Env}-${var.application}-admin"
+  name_prefix       = "${var.client_name}-${var.Env}-map"
   vpc_id            = module.app_vpc.vpc_id
   public_subnet_ids = [for s in module.app_vpc.public_subnets : s.id]
+  acm_certificate_arn = module.acm.certificate_arn
 }
 
-
+# ---------------------------
+# IDQ ALB
+# ---------------------------
 module "cwb_alb" {
   source            = "../modules/alb"
   client_name       = var.client_name
   Env               = var.Env
   application       = var.application
   create            = var.enable_cwb
-  name_prefix       = "${var.client_name}-${local.common_tags.Env}-${var.application}-cwb"
+  name_prefix       = "${var.client_name}-${var.Env}-cwb"
   vpc_id            = module.app_vpc.vpc_id
   public_subnet_ids = [for s in module.app_vpc.public_subnets : s.id]
+  acm_certificate_arn = module.acm.certificate_arn
 }
 
+
 # ---------------------------
-# MDM EC2 (Admin + MySQL)
+# MAP EC2 (Admin + MySQL)
 # ---------------------------
 module "map_ec2" {
   source             = "../modules/ec2"
@@ -73,31 +89,55 @@ module "map_ec2" {
   Env                = var.Env
   application        = var.application
   create             = var.enable_map
-  name_prefix        = "${var.client_name}-${local.common_tags.Env}-${var.application}"
+  name_prefix        = "${var.client_name}-${var.Env}-map"
   vpc_id             = module.app_vpc.vpc_id
   subnet_id          = values(module.app_vpc.private_subnets)[0].id
-  alb_sg_id          = module.map_alb.alb_sg_id
-  target_group_arn   = module.map_alb.target_group_arn
+  alb_sg_id          = try(module.map_alb.alb_sg_id, null)
+  target_group_arn   = try(module.map_alb.target_group_arn, null)
   ami_id             = data.aws_ami.ubuntu.id
   key_name           = var.ssh_key_name
   module_application = "map"
 }
 
+
+
+# ---------------------------
+# CWB EC2
+# ---------------------------
 module "cwb_ec2" {
   source             = "../modules/ec2"
   client_name        = var.client_name
   Env                = var.Env
   application        = var.application
   create             = var.enable_cwb
-  name_prefix        = "${var.client_name}-${local.common_tags.Env}-${var.application}"
+  name_prefix        = "${var.client_name}-${var.Env}-cwb"
   vpc_id             = module.app_vpc.vpc_id
   subnet_id          = values(module.app_vpc.private_subnets)[0].id
-  alb_sg_id          = module.cwb_alb.alb_sg_id
-  target_group_arn   = module.cwb_alb.target_group_arn
+  alb_sg_id          = try(module.cwb_alb.alb_sg_id, null)
+  target_group_arn   = try(module.cwb_alb.target_group_arn, null)
   ami_id             = data.aws_ami.ubuntu.id
   key_name           = var.ssh_key_name
   module_application = "cwb"
 }
+
+
+# ---------------------------
+# CloudFront (MAP only)
+# ---------------------------
+module "map_cloudfront" {
+  source              = "../modules/cloudfront"
+  client_name         = var.client_name
+  Env                 = var.Env
+  application         = var.application
+  create              = var.enable_map
+  name_prefix         = "${var.client_name}-${var.Env}-map"
+  s3_bucket_name      = var.s3_bucket_name
+  acm_certificate_arn = module.acm.certificate_arn
+  aliases             = var.subject_alternative_names
+}
+
+
+
 
 
 locals {
