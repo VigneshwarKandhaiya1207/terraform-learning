@@ -96,13 +96,9 @@ resource "aws_instance" "mysql" {
 # Target Group Attachments
 # ---------------------------
 resource "aws_lb_target_group_attachment" "app_attachment" {
-  for_each = var.create && var.target_group_arn != null ? {
-    for id in aws_instance.app : id.id => id.id
-  } : {}
+  for_each = var.create ? { "attach" = true } : {}
 
   target_group_arn = var.target_group_arn
-  target_id        = each.value
+  target_id        = aws_instance.app["app"].id
   port             = 80
 }
-
-

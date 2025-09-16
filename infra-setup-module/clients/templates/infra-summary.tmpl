@@ -1,4 +1,6 @@
-%{ for vpc_name, vpc in vpcs ~}
+# Infrastructure Summary
+
+%{ for vpc_name, vpc in infra.vpc ~}
 VPC: ${vpc_name} (${vpc.cidr_block})
 
 Public Subnets:
@@ -24,3 +26,19 @@ S3 Endpoint: ${vpc.s3_endpoint_id}
 
 ---------------------------------------
 %{ endfor ~}
+
+## ACM
+Certificate ARN: ${infra.acm.certificate_arn}
+
+## ALBs
+MAP ALB DNS: ${infra.alb.map.dns_name}
+CWB ALB DNS: ${infra.alb.cwb.dns_name}
+
+## EC2
+MAP App EC2: ${infra.ec2.map.app_instance}
+MAP MySQL EC2: ${infra.ec2.map.mysql_instance}
+CWB EC2: ${infra.ec2.cwb.app_instance}
+
+## CloudFront
+Distribution ID: ${infra.cloudfront.map.distribution_id}
+Domain Name: ${infra.cloudfront.map.domain_name}

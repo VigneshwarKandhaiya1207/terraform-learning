@@ -140,21 +140,68 @@ module "map_cloudfront" {
 
 
 
+# locals {
+#   all_vpcs = {
+#     vpc1 = module.app_vpc.vpc_info
+#   }
+# }
+
+
 locals {
-  all_vpcs = {
-    vpc1 = module.app_vpc.vpc_info
+  infra_summary = {
+    vpc = {
+      vpc1 = module.app_vpc.vpc_info
+    }
+    acm = {
+      certificate_arn = module.acm.certificate_arn
+    }
+    alb = {
+      map = {
+        dns_name = module.map_alb.alb_dns_name
+      }
+      cwb = {
+        dns_name = module.cwb_alb.alb_dns_name
+      }
+    }
+    ec2 = {
+      map = {
+        app_instance   = try(module.map_ec2.app_instance_id, null)
+        mysql_instance = try(module.map_ec2.mysql_instance_id, null)
+      }
+      cwb = {
+        app_instance = try(module.cwb_ec2.app_instance_id, null)
+      }
+    }
+    cloudfront = {
+      map = {
+        distribution_id = try(module.map_cloudfront.cloudfront_distribution_id, null)
+        domain_name     = try(module.map_cloudfront.cloudfront_domain_name, null)
+      }
+    }
   }
 }
 
-# CLI Output
+
 output "infra_summary_text" {
-  description = "Consolidated infra summary for all VPCs"
-  value       = templatefile("${path.module}/templates/infra-summary.tmpl", { vpcs = local.all_vpcs })
+  description = "Consolidated infra summary"
+  value       = templatefile("${path.module}/templates/infra-summary.tmpl", { infra = local.infra_summary })
 }
 
-# Optional: write to a file
 resource "local_file" "infra_summary_file" {
-  content  = templatefile("${path.module}/templates/infra-summary.tmpl", { vpcs = local.all_vpcs })
-  filename = "${path.module}/${var.client_name}-${local.common_tags.Env}-${var.application}-infra-summary.txt"
-
+  content  = templatefile("${path.module}/templates/infra-summary.tmpl", { infra = local.infra_summary })
+  filename = "${path.module}/${var.client_name}-${var.Env}-${var.application}-infra-summary.txt"
 }
+
+
+# # CLI Output
+# output "infra_summary_text" {
+#   description = "Consolidated infra summary for all VPCs"
+#   value       = templatefile("${path.module}/templates/infra-summary.tmpl", { vpcs = local.all_vpcs })
+# }
+
+# # Optional: write to a file
+# resource "local_file" "infra_summary_file" {
+#   content  = templatefile("${path.module}/templates/infra-summary.tmpl", { vpcs = local.all_vpcs })
+#   filename = "${path.module}/${var.client_name}-${local.common_tags.Env}-${var.application}-infra-summary.txt"
+
+# }
